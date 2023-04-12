@@ -6,7 +6,7 @@ from shutil import copytree, ignore_patterns
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from torch.utils import tensorboard as tensorboard
+# from torch.utils import tensorboard as tensorboard
 # import tensorboardX as tensorboard
 
 from model.transformer import SubsAudioVideoTransformer
@@ -246,16 +246,16 @@ def main(cfg):
     param_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f'Param Num: {param_num}')
     
-    if cfg.to_log:
-        os.makedirs(cfg.log_path)
-        os.makedirs(cfg.model_checkpoint_path, exist_ok=True) # handles the case when model_checkpoint_path = log_path
-        TBoard = tensorboard.SummaryWriter(log_dir=cfg.log_path)
-        TBoard.add_text('config', cfg.get_params('md_table'), 0)
-        TBoard.add_text('config/comment', cfg.comment, 0)
-        TBoard.add_scalar('debug/param_number', param_num, 0)
-        pass
-    else:
-        TBoard = None
+    # if cfg.to_log:
+    #     os.makedirs(cfg.log_path)
+    #     os.makedirs(cfg.model_checkpoint_path, exist_ok=True) # handles the case when model_checkpoint_path = log_path
+    #     TBoard = tensorboard.SummaryWriter(log_dir=cfg.log_path)
+    #     TBoard.add_text('config', cfg.get_params('md_table'), 0)
+    #     TBoard.add_text('config/comment', cfg.comment, 0)
+    #     TBoard.add_scalar('debug/param_number', param_num, 0)
+    #     pass
+    # else:
+    TBoard = None
 
     # keeping track of the best model 
     best_metric = 0
@@ -377,7 +377,7 @@ if __name__ == "__main__":
         help='Prevent logging in the experiment.'
     )
     parser.add_argument(
-        '--device_ids', type=str, default="cpu",
+        '--device_ids', type=int, default=0,
         help='device indices separated by a whitespace'
     )
     parser.add_argument(
