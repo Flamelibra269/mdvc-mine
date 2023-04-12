@@ -174,7 +174,7 @@ def main(cfg):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     
-    torch.device(cfg.device_ids)
+    torch.cuda.set_device(cfg.device_ids[0])
 
     train_dataset = ActivityNetCaptionsIteratorDataset(
         cfg.start_token, cfg.end_token, cfg.pad_token, cfg.min_freq, 
