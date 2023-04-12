@@ -78,7 +78,7 @@ class Config(object):
             
         # training
         self.device_ids = args.device_ids
-        self.device = f'cuda:{self.device_ids[0]}'
+        self.device = f'cpu'
         self.train_batch_size = args.B * len(self.device_ids)
         self.inference_batch_size = args.inf_B_coeff * self.train_batch_size
         self.start_epoch = args.start_epoch # todo: pretraining
@@ -174,7 +174,7 @@ def main(cfg):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     
-    torch.cuda.set_device(cfg.device_ids[0])
+    torch.device(cfg.device_ids)
 
     train_dataset = ActivityNetCaptionsIteratorDataset(
         cfg.start_token, cfg.end_token, cfg.pad_token, cfg.min_freq, 
@@ -216,7 +216,7 @@ def main(cfg):
         cfg.val_2_meta_path, torch.device(cfg.device), 'val_1', cfg.modality, 
         cfg.use_categories, props_are_gt=False, get_full_feat=False
     )
-    
+
     # make sure that DataLoader has batch_size = 1!
     train_loader = DataLoader(train_dataset, collate_fn=train_dataset.dont_collate)
     val_1_loader = DataLoader(val_1_dataset, collate_fn=val_1_dataset.dont_collate)
@@ -253,6 +253,7 @@ def main(cfg):
         TBoard.add_text('config', cfg.get_params('md_table'), 0)
         TBoard.add_text('config/comment', cfg.comment, 0)
         TBoard.add_scalar('debug/param_number', param_num, 0)
+        pass
     else:
         TBoard = None
 
@@ -261,78 +262,78 @@ def main(cfg):
     # "early stopping" thing
     num_epoch_best_metric_unchanged = 0
 
-    for epoch in range(cfg.start_epoch, cfg.epoch_num):
-        num_epoch_best_metric_unchanged += 1
+    # for epoch in range(cfg.start_epoch, cfg.epoch_num):
+    #     num_epoch_best_metric_unchanged += 1
         
-        if (num_epoch_best_metric_unchanged == cfg.early_stop_after) or (timer(cfg.curr_time) > 67):
-            print(f'Early stop at {epoch}: unchanged for {num_epoch_best_metric_unchanged} epochs')
-            print(f'Current timer: {timer(cfg.curr_time)}')
-            break
+    #     if (num_epoch_best_metric_unchanged == cfg.early_stop_after) or (timer(cfg.curr_time) > 67):
+    #         print(f'Early stop at {epoch}: unchanged for {num_epoch_best_metric_unchanged} epochs')
+    #         print(f'Current timer: {timer(cfg.curr_time)}')
+    #         break
         
-        # train
-        training_loop(
-            model, train_loader, loss_compute, lr_scheduler, epoch, TBoard, 
-            cfg.modality, cfg.use_categories
-        )
-        # validation (next word)
-        val_1_loss = validation_next_word_loop(
-            model, val_1_loader, greedy_decoder, loss_compute, lr_scheduler, 
-            epoch, cfg.max_len, cfg.videos_to_monitor, TBoard, cfg.modality, 
-            cfg.use_categories
-        )
-        val_2_loss = validation_next_word_loop(
-            model, val_2_loader, greedy_decoder, loss_compute, lr_scheduler, 
-            epoch, cfg.max_len, cfg.videos_to_monitor, TBoard, cfg.modality, 
-            cfg.use_categories
-        )
+    #     # train
+    #     training_loop(
+    #         model, train_loader, loss_compute, lr_scheduler, epoch, TBoard, 
+    #         cfg.modality, cfg.use_categories
+    #     )
+    #     # validation (next word)
+    #     val_1_loss = validation_next_word_loop(
+    #         model, val_1_loader, greedy_decoder, loss_compute, lr_scheduler, 
+    #         epoch, cfg.max_len, cfg.videos_to_monitor, TBoard, cfg.modality, 
+    #         cfg.use_categories
+    #     )
+    #     val_2_loss = validation_next_word_loop(
+    #         model, val_2_loader, greedy_decoder, loss_compute, lr_scheduler, 
+    #         epoch, cfg.max_len, cfg.videos_to_monitor, TBoard, cfg.modality, 
+    #         cfg.use_categories
+    #     )
         
-        val_loss_avg = (val_1_loss + val_2_loss) / 2
+    #     val_loss_avg = (val_1_loss + val_2_loss) / 2
         
-        # validation (1-by-1 word)
-        if epoch >= cfg.one_by_one_starts_at:
-            # validation with g.t. proposals
-            val_1_metrics = validation_1by1_loop(
-                model, val_1_loader, greedy_decoder, loss_compute, lr_scheduler, 
-                epoch, cfg.max_len, cfg.log_path, 
-                cfg.verbose_evaluation, [cfg.reference_paths[0]], cfg.tIoUs, 
-                cfg.max_prop_per_vid, TBoard, cfg.modality, cfg.use_categories, 
-            )
-            val_2_metrics = validation_1by1_loop(
-                model, val_2_loader, greedy_decoder, loss_compute, lr_scheduler, 
-                epoch, cfg.max_len, cfg.log_path, 
-                cfg.verbose_evaluation, [cfg.reference_paths[1]], cfg.tIoUs, 
-                cfg.max_prop_per_vid, TBoard, cfg.modality, cfg.use_categories, 
-            )
+    #     # validation (1-by-1 word)
+    #     if epoch >= cfg.one_by_one_starts_at:
+    #         # validation with g.t. proposals
+    #         val_1_metrics = validation_1by1_loop(
+    #             model, val_1_loader, greedy_decoder, loss_compute, lr_scheduler, 
+    #             epoch, cfg.max_len, cfg.log_path, 
+    #             cfg.verbose_evaluation, [cfg.reference_paths[0]], cfg.tIoUs, 
+    #             cfg.max_prop_per_vid, TBoard, cfg.modality, cfg.use_categories, 
+    #         )
+    #         val_2_metrics = validation_1by1_loop(
+    #             model, val_2_loader, greedy_decoder, loss_compute, lr_scheduler, 
+    #             epoch, cfg.max_len, cfg.log_path, 
+    #             cfg.verbose_evaluation, [cfg.reference_paths[1]], cfg.tIoUs, 
+    #             cfg.max_prop_per_vid, TBoard, cfg.modality, cfg.use_categories, 
+    #         )
             
-            if cfg.to_log:
-                # averaging metrics obtained from val_1 and val_2
-                metrics_avg = average_metrics_in_two_dicts(val_1_metrics, val_2_metrics)
-                metrics_avg = metrics_avg['Average across tIoUs']
+    #         if cfg.to_log:
+    #             # averaging metrics obtained from val_1 and val_2
+    #             metrics_avg = average_metrics_in_two_dicts(val_1_metrics, val_2_metrics)
+    #             metrics_avg = metrics_avg['Average across tIoUs']
                 
-                TBoard.add_scalar('metrics/val_loss_avg', val_loss_avg, epoch)
-                TBoard.add_scalar('metrics/meteor', metrics_avg['METEOR'] * 100, epoch)
-                TBoard.add_scalar('metrics/bleu4', metrics_avg['Bleu_4'] * 100, epoch)
-                TBoard.add_scalar('val_avg/bleu3', metrics_avg['Bleu_3'] * 100, epoch)
-                TBoard.add_scalar('val_avg/bleu2', metrics_avg['Bleu_2'] * 100, epoch)
-                TBoard.add_scalar('val_avg/bleu1', metrics_avg['Bleu_1'] * 100, epoch)
-                TBoard.add_scalar('val_avg/rouge_l', metrics_avg['ROUGE_L'] * 100, epoch)
-                TBoard.add_scalar('val_avg/cider', metrics_avg['CIDEr'] * 100, epoch)
-                TBoard.add_scalar('val_avg/precision', metrics_avg['Precision'] * 100, epoch)
-                TBoard.add_scalar('val_avg/recall', metrics_avg['Recall'] * 100, epoch)
+    #             TBoard.add_scalar('metrics/val_loss_avg', val_loss_avg, epoch)
+    #             TBoard.add_scalar('metrics/meteor', metrics_avg['METEOR'] * 100, epoch)
+    #             TBoard.add_scalar('metrics/bleu4', metrics_avg['Bleu_4'] * 100, epoch)
+    #             TBoard.add_scalar('val_avg/bleu3', metrics_avg['Bleu_3'] * 100, epoch)
+    #             TBoard.add_scalar('val_avg/bleu2', metrics_avg['Bleu_2'] * 100, epoch)
+    #             TBoard.add_scalar('val_avg/bleu1', metrics_avg['Bleu_1'] * 100, epoch)
+    #             TBoard.add_scalar('val_avg/rouge_l', metrics_avg['ROUGE_L'] * 100, epoch)
+    #             TBoard.add_scalar('val_avg/cider', metrics_avg['CIDEr'] * 100, epoch)
+    #             TBoard.add_scalar('val_avg/precision', metrics_avg['Precision'] * 100, epoch)
+    #             TBoard.add_scalar('val_avg/recall', metrics_avg['Recall'] * 100, epoch)
             
-                # saving the model if it is better than the best so far
-                if best_metric < metrics_avg['METEOR']:
-                    best_metric = metrics_avg['METEOR']
+    #             # saving the model if it is better than the best so far
+    #             if best_metric < metrics_avg['METEOR']:
+    #                 best_metric = metrics_avg['METEOR']
                     
-                    save_model(
-                        cfg, epoch, model, optimizer, val_1_loss, val_2_loss, 
-                        val_1_metrics, val_2_metrics, train_dataset.trg_voc_size
-                    )
-                    # reset the early stopping criterion
-                    num_epoch_best_metric_unchanged = 0
+    #                 save_model(
+    #                     cfg, epoch, model, optimizer, val_1_loss, val_2_loss, 
+    #                     val_1_metrics, val_2_metrics, train_dataset.trg_voc_size
+    #                 )
+    #                 # reset the early stopping criterion
+    #                 num_epoch_best_metric_unchanged = 0
                     
-                # put it after: so on zeroth epoch it is not zero
-                TBoard.add_scalar('val_avg/best_metric_meteor', best_metric * 100, epoch)
+    #             # put it after: so on zeroth epoch it is not zero
+    #             TBoard.add_scalar('val_avg/best_metric_meteor', best_metric * 100, epoch)
                 
     if cfg.to_log:
         # load the best model
@@ -376,7 +377,7 @@ if __name__ == "__main__":
         help='Prevent logging in the experiment.'
     )
     parser.add_argument(
-        '--device_ids', type=int, nargs='+', required=True,
+        '--device_ids', type=str, default="cpu",
         help='device indices separated by a whitespace'
     )
     parser.add_argument(
