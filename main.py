@@ -118,7 +118,7 @@ class Config(object):
             exper_name = self.make_experiment_name()
             self.comment = args.comment
             self.log_path = os.path.join(self.log_dir, exper_name)
-            self.model_checkpoint_path = os.path.join(self.checkpoint_dir, exper_name)
+            self.model_checkpoint_path = "checkpoint"
         else:
             self.log_dir = None
             self.log_path = None
@@ -400,11 +400,11 @@ if __name__ == "__main__":
     parser.add_argument('--video_feature_name', type=str, default='i3d')
     parser.add_argument(
         '--video_features_path', type=str, 
-        default='./data/sub_activitynet_v1-3.i3d_25fps_stack24step24_2stream.hdf5'
+        default='./data/video_feats.hdf5'
     )
     parser.add_argument('--audio_feature_name', type=str, default='vggish')
     parser.add_argument(
-        '--audio_features_path', type=str, default='./data/sub_activitynet_v1-3.vggish.hdf5'
+        '--audio_features_path', type=str, default='./data/audio_feats.hdf5'
     )
     parser.add_argument('--d_vid', type=int, default=1024)
     parser.add_argument('--d_aud', type=int, default=128)
