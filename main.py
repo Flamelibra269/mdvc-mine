@@ -377,7 +377,7 @@ if __name__ == "__main__":
         help='Prevent logging in the experiment.'
     )
     parser.add_argument(
-        '--device_ids', type=int, default=0,
+        '--device_ids', nargs= '+', type=int, required=True,
         help='device indices separated by a whitespace'
     )
     parser.add_argument(
