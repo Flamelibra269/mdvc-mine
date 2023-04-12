@@ -7,33 +7,33 @@ import spacy
 from time import time, strftime, localtime
 
 from model.transformer import mask
-from evaluate.evaluate import ANETcaptions
+#from evaluate.evaluate import ANETcaptions
 from dataset.dataset import load_multimodal_features_from_h5, filter_features
 from utils.utils import HiddenPrints
 
-def calculate_metrics(reference_paths, submission_path, tIoUs, max_prop_per_vid, verbose):
-    metrics = {}
-    PREDICTION_FIELDS = ['results', 'version', 'external_data']
-    evaluator = ANETcaptions(
-        reference_paths, submission_path, tIoUs, 
-        max_prop_per_vid, PREDICTION_FIELDS, verbose)
-    evaluator.evaluate()
+# def calculate_metrics(reference_paths, submission_path, tIoUs, max_prop_per_vid, verbose):
+#     metrics = {}
+#     PREDICTION_FIELDS = ['results', 'version', 'external_data']
+#     evaluator = ANETcaptions(
+#         reference_paths, submission_path, tIoUs, 
+#         max_prop_per_vid, PREDICTION_FIELDS, verbose)
+#     evaluator.evaluate()
     
-    for i, tiou in enumerate(tIoUs):
-        metrics[tiou] = {}
+#     for i, tiou in enumerate(tIoUs):
+#         metrics[tiou] = {}
 
-        for metric in evaluator.scores:
-            score = evaluator.scores[metric][i]
-            metrics[tiou][metric] = score
+#         for metric in evaluator.scores:
+#             score = evaluator.scores[metric][i]
+#             metrics[tiou][metric] = score
 
-    # Print the averages
+#     # Print the averages
     
-    metrics['Average across tIoUs'] = {}
-    for metric in evaluator.scores:
-        score = evaluator.scores[metric]
-        metrics['Average across tIoUs'][metric] = sum(score) / float(len(score))
+#     metrics['Average across tIoUs'] = {}
+#     for metric in evaluator.scores:
+#         score = evaluator.scores[metric]
+#         metrics['Average across tIoUs'][metric] = sum(score) / float(len(score))
     
-    return metrics
+#     return metrics
 
 def average_metrics_in_two_dicts(val_1_metrics, val_2_metrics):
     '''
@@ -524,21 +524,21 @@ def validation_1by1_loop(model, loader, decoder, loss_compute, lr_scheduler,
 
         ## RUN THE EVALUATION
         # blocks the printing
-        with HiddenPrints():
-            val_metrics = calculate_metrics(reference_paths, submission_path, tIoUs, max_prop_per_vid, verbose)
+        # with HiddenPrints():
+        #     val_metrics = calculate_metrics(reference_paths, submission_path, tIoUs, max_prop_per_vid, verbose)
 
-        ## WRITE TBOARD
-        if (TBoard is not None) and (props_are_gt):
-            # todo: add info that this metrics are calculated on val_1
-            TBoard.add_scalar(f'{phase}/meteor', val_metrics['Average across tIoUs']['METEOR'] * 100, epoch)
-            TBoard.add_scalar(f'{phase}/bleu4', val_metrics['Average across tIoUs']['Bleu_4'] * 100, epoch)
-            TBoard.add_scalar(f'{phase}/bleu3', val_metrics['Average across tIoUs']['Bleu_3'] * 100, epoch)
-            TBoard.add_scalar(f'{phase}/bleu2', val_metrics['Average across tIoUs']['Bleu_2'] * 100, epoch)
-            TBoard.add_scalar(f'{phase}/bleu1', val_metrics['Average across tIoUs']['Bleu_1'] * 100, epoch)
-            TBoard.add_scalar(f'{phase}/rouge_l', val_metrics['Average across tIoUs']['ROUGE_L'] * 100, epoch)
-            TBoard.add_scalar(f'{phase}/cider', val_metrics['Average across tIoUs']['CIDEr'] * 100, epoch)
-            TBoard.add_scalar(f'{phase}/precision', val_metrics['Average across tIoUs']['Precision'] * 100, epoch)
-            TBoard.add_scalar(f'{phase}/recall', val_metrics['Average across tIoUs']['Recall'] * 100, epoch)
-            TBoard.add_scalar(f'{phase}/duration_of_1by1', (time() - start_timer) / 60, epoch)
+        # ## WRITE TBOARD
+        # if (TBoard is not None) and (props_are_gt):
+        #     # todo: add info that this metrics are calculated on val_1
+        #     TBoard.add_scalar(f'{phase}/meteor', val_metrics['Average across tIoUs']['METEOR'] * 100, epoch)
+        #     TBoard.add_scalar(f'{phase}/bleu4', val_metrics['Average across tIoUs']['Bleu_4'] * 100, epoch)
+        #     TBoard.add_scalar(f'{phase}/bleu3', val_metrics['Average across tIoUs']['Bleu_3'] * 100, epoch)
+        #     TBoard.add_scalar(f'{phase}/bleu2', val_metrics['Average across tIoUs']['Bleu_2'] * 100, epoch)
+        #     TBoard.add_scalar(f'{phase}/bleu1', val_metrics['Average across tIoUs']['Bleu_1'] * 100, epoch)
+        #     TBoard.add_scalar(f'{phase}/rouge_l', val_metrics['Average across tIoUs']['ROUGE_L'] * 100, epoch)
+        #     TBoard.add_scalar(f'{phase}/cider', val_metrics['Average across tIoUs']['CIDEr'] * 100, epoch)
+        #     TBoard.add_scalar(f'{phase}/precision', val_metrics['Average across tIoUs']['Precision'] * 100, epoch)
+        #     TBoard.add_scalar(f'{phase}/recall', val_metrics['Average across tIoUs']['Recall'] * 100, epoch)
+        #     TBoard.add_scalar(f'{phase}/duration_of_1by1', (time() - start_timer) / 60, epoch)
 
-        return val_metrics
+        # return val_metrics

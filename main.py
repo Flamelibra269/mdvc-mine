@@ -340,16 +340,16 @@ def main(cfg):
         best_model_path = os.path.join(cfg.model_checkpoint_path, 'best_model.pt')
         checkpoint = torch.load(best_model_path)
         model.load_state_dict(checkpoint['model_state_dict'])
-        val_metrics_pred_prop = validation_1by1_loop(
+        validation_1by1_loop(
             model, val_pred_prop_loader, greedy_decoder, loss_compute, lr_scheduler, 
             checkpoint['epoch'], cfg.max_len, cfg.log_path, 
             cfg.verbose_evaluation, cfg.reference_paths, cfg.tIoUs, 
             cfg.max_prop_per_vid, TBoard, cfg.modality, cfg.use_categories
         )
-        best_metric_pred_prop = val_metrics_pred_prop['Average across tIoUs']['METEOR']
-        print(f'best_metric: {best_metric}')
-        print(f'best_metric_pred_prop: {best_metric_pred_prop}')
-        TBoard.close()
+        # best_metric_pred_prop = val_metrics_pred_prop['Average across tIoUs']['METEOR']
+        # print(f'best_metric: {best_metric}')
+        # print(f'best_metric_pred_prop: {best_metric_pred_prop}')
+        # TBoard.close()
                 
 
 if __name__ == "__main__":
